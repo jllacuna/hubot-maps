@@ -85,7 +85,8 @@ module.exports = (robot) ->
 
   robot.respond /(?:(satellite|terrain|hybrid)[- ])?map( me)? (.+)/i, (msg) ->
     mapType  = msg.match[1] or "roadmap"
-    location = encodeURIComponent(msg.match[3])
+    where    = msg.match[3]
+    location = encodeURIComponent(where)
     mapUrl   = "http://maps.google.com/maps/api/staticmap?markers=" +
                 location +
                 "&size=400x400&maptype=" +
@@ -93,11 +94,23 @@ module.exports = (robot) ->
                 "&sensor=false" +
                 "&format=png" # So campfire knows it's an image
     url      = "http://maps.google.com/maps?q=" +
-               location +
-              "&hl=en&sll=37.0625,-95.677068&sspn=73.579623,100.371094&vpsrc=0&hnear=" +
-              location +
-              "&t=m&z=11"
+                location +
+                "&hl=en&sll=37.0625,-95.677068&sspn=73.579623,100.371094&vpsrc=0&hnear=" +
+                location +
+                "&t=m&z=11"
 
-    msg.send mapUrl
-    msg.send url
+    if robot.adapterName == 'slack'
+      title = "Map of #{where}"
+      msg.send
+        attachments: [
+          {
+            title: title
+            title_link: url
+            fallback: title
+            image_url: mapUrl
+          }
+        ]
 
+    else
+      msg.send mapUrl
+      msg.send url
