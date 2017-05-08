@@ -77,6 +77,7 @@ module.exports = (robot) ->
               ]
             }
           ]
+        msg.send map
 
       else
         msg.send map
@@ -110,6 +111,7 @@ module.exports = (robot) ->
             image_url: mapUrl
           }
         ]
+      msg.send mapUrl
 
     else
       msg.send mapUrl
