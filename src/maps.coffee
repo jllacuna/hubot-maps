@@ -49,7 +49,7 @@ module.exports = (robot) ->
         directions += "#{i}. #{instructions} (#{step.distance.text})\n"
         i++
 
-      map = "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
+      mapUrl = "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
         "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
 
       if robot.adapterName == 'slack'
@@ -62,7 +62,7 @@ module.exports = (robot) ->
               pretext: pretext
               text: directions
               fallback: "Map from #{start} to #{end}"
-              image_url: map
+              image_url: mapUrl
               fields: [
                 {
                   title: 'From'
@@ -77,10 +77,9 @@ module.exports = (robot) ->
               ]
             }
           ]
-        msg.send map
 
       else
-        msg.send map
+        msg.send mapUrl
         msg.send "#{pretext}\n" + "#{title}\n\n" + directions
     )
 
@@ -111,7 +110,6 @@ module.exports = (robot) ->
             image_url: mapUrl
           }
         ]
-      msg.send mapUrl
 
     else
       msg.send mapUrl
