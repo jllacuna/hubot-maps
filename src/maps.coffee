@@ -39,18 +39,35 @@ module.exports = (robot) ->
       end = legs.end_address
       distance = legs.distance.text
       duration = legs.duration.text
-      response = "Directions from #{start} to #{end}\n"
-      response += "#{distance} - #{duration}\n\n"
+      title = "Directions from #{start} to #{end}"
+      pretext = "#{distance} - #{duration}"
+      directions = ''
       i = 1
       for step in legs.steps
         instructions = step.html_instructions.replace(/<div[^>]+>/g, ' - ')
         instructions = instructions.replace(/<[^>]+>/g, '')
-        response += "#{i}. #{instructions} (#{step.distance.text})\n"
+        directions += "#{i}. #{instructions} (#{step.distance.text})\n"
         i++
 
-      msg.send "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
-               "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
-      msg.send response
+
+      if robot.adapterName == 'slack'
+        msg.send
+          attachments: [
+            title: title
+            pretext: pretext
+            text: directions
+            fallback: "Map from #{start} to #{end}"
+            image_url: "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
+              "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
+            fields:
+              'From': start
+              'To': end
+          ]
+
+      else
+        msg.send "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
+                "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
+        msg.send "#{title}\n" + "#{pretext}\n\n" + directions
     )
 
   robot.respond /(?:(satellite|terrain|hybrid)[- ])?map( me)? (.+)/i, (msg) ->
