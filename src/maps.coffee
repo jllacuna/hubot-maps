@@ -39,8 +39,8 @@ module.exports = (robot) ->
       end = legs.end_address
       distance = legs.distance.text
       duration = legs.duration.text
-      title = "Directions from #{start} to #{end}"
-      pretext = "#{distance} - #{duration}"
+      pretext = "Directions from #{start} to #{end}"
+      title = "#{distance} - #{duration}"
       directions = ''
       i = 1
       for step in legs.steps
@@ -49,25 +49,40 @@ module.exports = (robot) ->
         directions += "#{i}. #{instructions} (#{step.distance.text})\n"
         i++
 
+      map = "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
+        "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false.jpg"
+
+      console.log map
 
       if robot.adapterName == 'slack'
         msg.send
+          response_type: 'in_channel'
+          unfurl_media: true
           attachments: [
-            title: title
-            pretext: pretext
-            text: directions
-            fallback: "Map from #{start} to #{end}"
-            image_url: "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
-              "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
-            fields:
-              'From': start
-              'To': end
+            {
+              title: title
+              pretext: pretext
+              text: directions
+              fallback: "Map from #{start} to #{end}"
+              image_url: map
+              fields: [
+                {
+                  title: 'From'
+                  value: start
+                  short: true
+                }
+                {
+                  title: 'To'
+                  value: end
+                  short: true
+                }
+              ]
+            }
           ]
 
       else
-        msg.send "http://maps.googleapis.com/maps/api/staticmap?size=400x400&" +
-                "path=weight:3%7Ccolor:red%7Cenc:#{route.overview_polyline.points}&sensor=false"
-        msg.send "#{title}\n" + "#{pretext}\n\n" + directions
+        msg.send map
+        msg.send "#{pretext}\n" + "#{title}\n\n" + directions
     )
 
   robot.respond /(?:(satellite|terrain|hybrid)[- ])?map( me)? (.+)/i, (msg) ->
